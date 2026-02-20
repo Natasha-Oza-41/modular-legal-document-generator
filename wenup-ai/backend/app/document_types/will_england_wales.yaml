@@ -1,0 +1,260 @@
+document_type_id: "will_england_wales"
+display_name: "Last Will & Testament (England & Wales)"
+jurisdiction: "England and Wales"
+version: "1.0.0"
+template_file: "will_england_wales.j2"
+
+conversation_config:
+  greeting: >
+    Welcome. I will help you prepare a Last Will and Testament under the laws of England
+    and Wales. I am not a solicitor and cannot give legal advice. I will collect the
+    information needed to draft your document, which you should then review with a
+    qualified solicitor before signing. Please answer each question as fully and accurately
+    as possible. Shall we begin? (Type anything to start.)
+  completion_message: >
+    Thank you. I have collected all the required information. Your document is now being
+    prepared. Once it is ready you will be able to download it as a PDF or Word document.
+    Please review it carefully before signing, and have it reviewed by a solicitor.
+  advice_redirect: >
+    That is a legal question that falls outside what I am able to help with. For advice
+    specific to your situation, please consult a qualified solicitor.
+
+fields:
+  - id: "testator_full_name"
+    label: "Full Legal Name"
+    type: "text"
+    required: true
+    section: "testator"
+    question: "What is your full legal name as it appears on official documents?"
+    clarification_prompt: >
+      Could you please provide your full name, including any middle names, exactly as it
+      appears on your passport or birth certificate?
+    vagueness_triggers: []
+    validation:
+      min_length: 3
+      error_message: "Please provide your full legal name."
+
+  - id: "testator_dob"
+    label: "Date of Birth"
+    type: "date"
+    required: true
+    section: "testator"
+    question: "What is your date of birth? Please use the format DD/MM/YYYY."
+    clarification_prompt: >
+      Could you provide your date of birth in the format DD/MM/YYYY?
+      For example: 15/04/1970.
+    vagueness_triggers: []
+    validation:
+      format: "DD/MM/YYYY"
+      min_age: 18
+      error_message: "Please provide your date of birth in the format DD/MM/YYYY."
+
+  - id: "testator_address"
+    label: "Current Address"
+    type: "address"
+    required: true
+    section: "testator"
+    question: "What is your current home address, including full postcode?"
+    clarification_prompt: >
+      Could you provide your full residential address including the postcode?
+      For example: 12 High Street, London, EC1A 1BB.
+    vagueness_triggers: ["somewhere", "around", "near", "about", "nearby"]
+
+  - id: "testator_occupation"
+    label: "Occupation"
+    type: "text"
+    required: true
+    section: "testator"
+    question: >
+      What is your current occupation? If you are retired, please state your previous
+      occupation followed by "(retired)".
+    clarification_prompt: "Could you describe your occupation in a little more detail?"
+    vagueness_triggers: []
+
+  - id: "executor_primary_full_name"
+    label: "Primary Executor — Full Name"
+    type: "text"
+    required: true
+    section: "executors"
+    question: >
+      Who would you like to appoint as your primary executor — the person responsible for
+      carrying out the wishes in your Will after your death? Please provide their full
+      legal name.
+    clarification_prompt: "Could you provide the full legal name of your primary executor?"
+    context_note: >
+      An executor manages your estate after your death. They do not need to be informed
+      of their appointment at this stage.
+    vagueness_triggers: []
+
+  - id: "executor_primary_relationship"
+    label: "Primary Executor — Relationship to You"
+    type: "text"
+    required: true
+    section: "executors"
+    question: "What is your relationship to {executor_primary_full_name}? (e.g. spouse, sibling, friend, solicitor)"
+    clarification_prompt: >
+      How do you know {executor_primary_full_name}? What is your relationship to them?
+    vagueness_triggers: []
+
+  - id: "executor_primary_address"
+    label: "Primary Executor — Address"
+    type: "address"
+    required: true
+    section: "executors"
+    question: "What is the current address of {executor_primary_full_name}, including postcode?"
+    clarification_prompt: >
+      Please provide the full address including postcode for {executor_primary_full_name}.
+    vagueness_triggers: ["somewhere", "not sure", "think", "around", "same", "nearby"]
+
+  - id: "executor_substitute_full_name"
+    label: "Substitute Executor — Full Name (optional)"
+    type: "text"
+    required: false
+    section: "executors"
+    question: >
+      Would you like to name a substitute executor, in case {executor_primary_full_name}
+      is unable or unwilling to act when the time comes? If yes, please provide their
+      full name. If not, type 'no'.
+    clarification_prompt: >
+      Would you like to name a backup executor? If so, please give their full legal name.
+      Otherwise type 'no'.
+    vagueness_triggers: []
+    skip_if_answer_is: ["no", "n", "no thank you", "nope", "none"]
+
+  - id: "executor_substitute_address"
+    label: "Substitute Executor — Address"
+    type: "address"
+    required: false
+    section: "executors"
+    depends_on:
+      field: "executor_substitute_full_name"
+      condition: "not_skipped"
+    question: "What is the current address of {executor_substitute_full_name}, including postcode?"
+    clarification_prompt: >
+      Please provide the full address including postcode for {executor_substitute_full_name}.
+    vagueness_triggers: ["somewhere", "not sure", "same", "around"]
+
+  - id: "guardian_appointment"
+    label: "Guardian for Minor Children (optional)"
+    type: "text"
+    required: false
+    section: "guardians"
+    question: >
+      Do you have any children under the age of 18? If so, would you like to appoint a
+      guardian for them in the event that both parents have died? If yes, please provide
+      the guardian's full name. If this does not apply, type 'no'.
+    clarification_prompt: >
+      Please provide the full legal name of the person you wish to appoint as guardian,
+      or type 'no' if this does not apply.
+    vagueness_triggers: []
+    skip_if_answer_is: ["no", "n", "not applicable", "na", "n/a", "none"]
+
+  - id: "guardian_address"
+    label: "Guardian — Address"
+    type: "address"
+    required: false
+    section: "guardians"
+    depends_on:
+      field: "guardian_appointment"
+      condition: "not_skipped"
+    question: "What is the current address of {guardian_appointment}, including postcode?"
+    clarification_prompt: >
+      Please provide the full address including postcode for {guardian_appointment}.
+    vagueness_triggers: []
+
+  - id: "specific_gifts"
+    label: "Specific Gifts or Bequests (optional)"
+    type: "gift_list"
+    required: false
+    section: "gifts"
+    question: >
+      Do you wish to leave any specific items or sums of money to particular individuals
+      before the remainder of your estate is distributed? For example: 'I give my gold
+      watch to my nephew Tom Jones' or 'I give £5,000 to my friend Sarah Brown'.
+      List each gift on a new line. If none, type 'no'.
+    clarification_prompt: >
+      Please describe each specific gift clearly: what the item or sum of money is, and
+      the full name of the recipient. One gift per line. If none, type 'no'.
+    vagueness_triggers: [
+      "some money", "a bit", "quite a lot", "my stuff", "my things",
+      "a few things", "some things", "valuables"
+    ]
+    skip_if_answer_is: ["no", "n", "none", "no thank you", "nope"]
+
+  - id: "residuary_beneficiaries"
+    label: "Residuary Beneficiaries"
+    type: "beneficiary_list"
+    required: true
+    section: "beneficiaries"
+    question: >
+      Who should inherit your estate (or the remainder of it after any specific gifts)?
+      Please list each beneficiary with: their full name, their relationship to you, and
+      their percentage share. The shares must add up to 100%.
+      Example: 'Jane Smith, my wife, 100%'
+      Or: 'Jane Smith, my wife, 50%; Michael Smith, my son, 25%; Sarah Smith, my daughter, 25%'
+    clarification_prompt: >
+      Please list all intended beneficiaries with their full names, your relationship to
+      them, and the percentage share each should receive. All shares must add up to exactly
+      100%. For example: 'John Brown, my brother, 50%; Mary Brown, my sister, 50%'.
+    vagueness_triggers: [
+      "everything", "all of it", "split equally", "the kids", "my family",
+      "savings", "quite a lot", "my children", "divided equally", "share equally"
+    ]
+    validation:
+      shares_must_total: 100
+      error_message: "The shares allocated to beneficiaries must add up to exactly 100%."
+
+  - id: "funeral_wishes"
+    label: "Funeral Wishes (optional)"
+    type: "text_optional"
+    required: false
+    section: "funeral"
+    question: >
+      Do you have any funeral wishes you would like to express in your Will, such as a
+      preference for burial or cremation, or a preferred location? These are not legally
+      binding but are commonly included. If none, type 'no'.
+    clarification_prompt: >
+      Could you describe your funeral preferences in more detail? If none, type 'no'.
+    vagueness_triggers: []
+    skip_if_answer_is: ["no", "n", "none", "no thank you", "nope"]
+
+  - id: "signing_acknowledgement"
+    label: "Signing Acknowledgement"
+    type: "signature_block"
+    required: true
+    section: "execution"
+    question: >
+      Finally, I want to confirm that you understand the signing requirements. In England
+      and Wales, a Will must be signed by you in the presence of two independent adult
+      witnesses, who must also sign the document at the same time. The witnesses cannot
+      be beneficiaries or spouses of beneficiaries.
+      Type 'yes' to confirm you understand this requirement.
+    clarification_prompt: >
+      Please type 'yes' to confirm you understand that the Will must be signed in the
+      presence of two independent adult witnesses who are not beneficiaries.
+    vagueness_triggers: []
+    validation:
+      must_equal: "yes"
+
+sections:
+  - id: "testator"
+    title: "Personal Details"
+    order: 1
+  - id: "executors"
+    title: "Appointment of Executors"
+    order: 2
+  - id: "guardians"
+    title: "Appointment of Guardian"
+    order: 3
+  - id: "gifts"
+    title: "Specific Gifts and Bequests"
+    order: 4
+  - id: "beneficiaries"
+    title: "Residuary Estate"
+    order: 5
+  - id: "funeral"
+    title: "Funeral Wishes"
+    order: 6
+  - id: "execution"
+    title: "Execution"
+    order: 7
